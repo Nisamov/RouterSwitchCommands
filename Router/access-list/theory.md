@@ -10,7 +10,7 @@ Existen dos tipos de listas de acceso:
 | Tipo          | Rango / Nombre   | Uso                                                                                               |
 | ------------- | ---------------- | ------------------------------------------------------------------------------------------------- |
 | **Estándar**  | 1-99 / Nombre    | Permite o deniega todo el tráfico de IPs.                                                         |
-| **Extendida** | 100-199 / Nombre | Permite o deniega tráfico por protocolo (HTTP, HTTPS, SSH, Telnet, etc.) y por IP origen/destino. |
+| **Extendida** | 100-199 / Nombre | Permite o deniega tráfico por protocolo (HTTP, HTTPS, SSH, Telnet, etc.) y por IP origen/destino. Usan puertos por los que permitir o bloquear el acceso. |
 
 > Las listas se leen de arriba hacia abajo. Si colocas permit all al inicio, todas las reglas siguientes se ignoran.
 
@@ -43,6 +43,27 @@ interface fa0/0
 ip access-group 1 out
 ```
 
+### Denegar Rango Redes Lista Extendida
+```
+# Habilitar router
+enable
+# Modo configuración
+configure terminal
+# Creamos lista extendida numerada
+access-list 101 deny ip 192.168.1.128 0.0.0.63 192.168.2.0 0.0.0.255
+# Denegar tráfico DHCP (server y client)
+access-list 101 deny udp any any eq 67
+access-list 101 deny udp any any eq 68
+# Denegar FTP
+access-list 101 deny tcp any any eq 20
+access-list 101 deny tcp any any eq 21
+# Permitir todo lo demás
+access-list 101 permit ip any any
+# Salida por la interfaz Fa0/0
+interface fa0/0
+ip access-group 101 out
+```
+
 ### Permitir Redes
 Para permitir el acceso de una red:
 ```
@@ -58,10 +79,16 @@ interface fa0/0
 ip access-group 1 in
 ```
 
-### Eliminar Lista de Acceso
+### Eliminar Lista de Acceso u Orden
+Eliminar lista de acceso:
 ```
 configure terminal
 no access-list [ID]
+```
+Eliminar orden de una lista de acceso:
+```
+show acces-list [ID]
+no [número de línea de la regla]
 ```
 
 ### Mostrar Listas de Acceso
