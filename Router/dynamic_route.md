@@ -8,6 +8,23 @@ En versiones:
 - 1: No tiene en cuenta las máscaras: /8, /16 y /24
 - 2: Tiene en cuenta todas (más usado)
 
+RIP permite hasta 15 saltos, útil en redes pequeñas.
+
+### Tras enrutar redes
+
+Para ver como se han enrutado de forma automática el resto de redes.
+```
+Router#SHOW IP ROUTE rip
+```
+Para ver redes conectadas
+```
+Router#show ip protocols
+```
+Ver actualizaciones en tiempo real:
+```
+Router#debug ip rip
+```
+
 Ospf
 Protocolo de estado de enlace (detecta cual es mejor camino).
 Divide todo en diferentes áreas.
