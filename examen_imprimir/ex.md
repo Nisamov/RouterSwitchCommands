@@ -1,1 +1,0 @@
-nat pat, dhcp y nat estatica, port security

@@ -18,17 +18,17 @@ Router(config)#access-list 1 permit 10.0.0.0 0.0.0.255
 Router(config)#ip nat pool NAT_POOL 20.0.0.3 20.0.0.4 netmask 255.255.255.0
 Router(config)#ip nat inside source list 1 pool NAT_POOL
 Router(config)#end
-Router#
+```
 Ver traducciones NAT
-prolog
-Copiar código
+```prolog
 Router#show ip nat translations
+```
 Limpiar traducciones activas
-prolog
-Copiar código
+```prolog
 Router#clear ip nat translation *
+```
 Eliminar NAT Dinámica
-prolog
+```prolog
 Copiar código
 Router#configure terminal
 Router(config)#no ip nat inside source list 1 pool NAT_POOL

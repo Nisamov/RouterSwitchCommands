@@ -1,0 +1,69 @@
+@startuml
+skinparam linetype ortho
+skinparam rectangle {
+  RoundCorner 10
+}
+
+top to bottom direction
+
+cloud Cloud
+rectangle "Router CORE" as RCore
+Cloud --> RCore
+
+together {
+  rectangle "Router1" as R1
+  rectangle "Router2" as R2
+  rectangle "Router4" as R4
+}
+
+rectangle "Router3" as R3
+
+R1 --> R2 : 40.0.0.0/8
+R2 --> RCore : 50.0.0.0/8
+RCore --> R4 : 200.0.0.0/24
+RCore --> R3 : 192.0.0.0/24
+
+package "LAN 30.0.0.0/8" {
+  rectangle "Switch0" as SW0
+  rectangle "PC0"
+  rectangle "Server0"
+  PC0 --> SW0
+  Server0 --> SW0
+}
+SW0 --> R1
+
+package "VLANs" {
+  package "VLAN 20" {
+    rectangle "PC1"
+  }
+  package "VLAN 10" {
+    rectangle "Server1"
+  }
+  rectangle "Switch5" as SW5
+  rectangle "Switch4" as SW4
+
+  PC1 --> SW5
+  SW5 --> SW4
+  Server1 --> SW4
+}
+SW5 --> R2
+
+package "LAN 205.0.0.0/24" {
+  rectangle "Switch3" as SW3
+  rectangle "PC2"
+  rectangle "Server2"
+  PC2 --> SW3
+  Server2 --> SW3
+}
+SW3 --> R4
+
+package "LAN 210.0.0.0/24" {
+  rectangle "Switch2" as SW2
+  rectangle "PC3"
+  rectangle "Server3"
+  PC3 --> SW2
+  Server3 --> SW2
+}
+SW2 --> R3
+
+@enduml
