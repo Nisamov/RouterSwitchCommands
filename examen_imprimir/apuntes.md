@@ -1,5 +1,5 @@
 > Este documento incluye:
-> - OSPF, MD5 multiárea, ACL, VLANs, Redes (NAT, PAT, Dinámica), Seguridad de Puertos
+> - OSPF, MD5 multiárea, ACL, VLANs, Redes (NAT, PAT, Dinámica), Seguridad de Puertos, BGP
 
 ## Configuración básica OSPF Multiárea
 
@@ -105,7 +105,7 @@ Router(config)#show acces-list [ID]
 Router(config)#no [número de línea de la regla]
 ```
 
-## Configuración VLANs
+## Configuración VLANs VTP
 Crear VLAN 10 y VLAN 20
 ```
 Switch(config)#vlan 10
@@ -138,6 +138,25 @@ Switch(config-in)#ip address 10.0.0.1 255.0.0.0
 Router(config-in)#no shutdown
 Router(config)#interface fa0/0.20
 ```
+## Encapsulación
+
+Seleccionar el puerto de conexion de  Router a Vlan
+
+`0.10` Sería para la Vlan 10, se repite el siguiente proceso para todas las Vlans a conectar
+```
+Router(config)#in gi0/0.10
+# El dot1Q VLAN (10,20,30...)
+Router(config-subif)#encapsulation dot1Q 10
+# La IP a agregar es el Gateway
+Router(config-subif)#ip address 192.168.100.1 255.255.255.0
+Router(config-subif)#no sh
+Router(config-subif)exit
+# Resto de vlans a agregar
+# Conexion con la interfaz principal
+Router(config)#in gi0/0
+Router(config-in)#no sh
+```
+
 ## Configuración Red NAT
 Configuración red externa y red interna
 ### NAT Dinámica
@@ -165,3 +184,21 @@ ip nat outside
 exit
 access-list 1 permit 10.0.0.0 0.255.255.255
 ip nat inside source list 1 interface gi0/1 overload
+
+## Telnet
+Abrir conexiones de 0 a 15 por vty
+```
+Switch (config)# line vty 0 15
+Switch (config-line)# password contraseña
+Switch (config-line)# login
+Switch (config-line)# exit
+Switch (config)# service password-encryption 
+```
+Mensaje de bienvenida diario
+```
+Switch(config)# banner motd &mensaje&
+```
+Guardar configuracion permanentemente
+```
+Switch# copy running-config startup-config 
+```
