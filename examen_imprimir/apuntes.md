@@ -1,5 +1,5 @@
 > Este documento incluye:
-> - OSPF, MD5 multiárea, ACL, VLANs, Redes (NAT, PAT, Dinámica), Seguridad de Puertos, BGP
+> OSPF, MD5 multiárea, ACL, VLANs, Redes (NAT, PAT, Dinámica), Seguridad de Puertos, BGP
 
 ## Configuración básica OSPF Multiárea
 
@@ -29,6 +29,19 @@ Router#show ip ospf interface brief
 Router#show ip route ospf
 Router#show ip protocols
 ```
+
+## Habilitar MD5 Tras OSPF
+
+```
+Router(config)#router ospf 1
+Router(config)#area 0 authentication message-digest
+```
+Agregar claves
+```
+Router(config)#interface g0/0
+Router(config-if)#ip ospf message-digest-key 1 md5 CLAVE123
+```
+
 ## Confguración ACLs
 
 ### Sintaxis General
@@ -159,9 +172,10 @@ Router(config-in)#no sh
 
 ## Configuración Red NAT
 Configuración red externa y red interna
+
 ### NAT Dinámica
 - Se crea una ACL numero 1, que da acceso a la 10.0.0.0
-- Convierte las IP 20.0.0.3 en 20.0.0.4
+- Convierte las IP 20.0.0.3 en 20.0.0.4 es un rango de IPs
 ```
 Router(config)#interface gi0/0
 Router(config-if)#ip nat inside
@@ -169,11 +183,25 @@ Router(config-if)#exit
 Router(config)#interface gi0/1
 Router(config-if)#ip nat outside
 Router(config-if)#exit
-Router(config)#access-list 1 permit 10.0.0.0 0.0.0.255
-Router(config)#ip nat pool NAT_POOL 20.0.0.3 20.0.0.4 netmask 255.255.255.0
+Router(config)#access-list 1 permit 10.0.0.0 0.0.0.255 (MASCARA WILDCARD [INVERSA])
+Router(config)#ip nat pool NAT_POOL 20.0.0.3 20.0.0.4 netmask 255.255.255.0 (MASCARA NORMAL)
 Router(config)#ip nat inside source list 1 pool NAT_POOL
 Router(config)#end
 ```
+
+### NAT Estática
+Se convierten las IPs de `10.0.0.X` en `20.0.0.X`
+```
+Router(config)#in gi0/0
+Router(config-if)#ip nat inside
+Router(config-if)#exit
+Router(config)#in gi0/1
+Router(config-if)#ip nat outside
+Router(config-if)#exit
+Router(config)#ip nat inside source static 10.0.0.2 20.0.0.3
+Router(config)#ip nat inside source static 10.0.0.3 20.0.0.4
+```
+
 ### NAT Overload
 ```
 in gi0/0
