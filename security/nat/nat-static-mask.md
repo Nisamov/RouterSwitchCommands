@@ -8,6 +8,7 @@ enable
 confi t
 in gi0/0
 ip nat insisde
+exit
 in gi0/1
 ip nat outside
 exit
@@ -20,7 +21,7 @@ ip nat inside source static 10.0.0.3 20.0.0.4
 ```
 - Mostrar transformación de IPs de interna a externa.
 ```prolog
-Router#show ipnat translations
+Router#show ip nat translations
 ```
 - Eliminar NAT
 ```prolog

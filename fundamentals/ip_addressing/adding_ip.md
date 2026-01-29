@@ -13,5 +13,5 @@ Ejemplo práctico:
 ```
 Router(config)# interface gigabitEthernet 0/0
 Router(config-if)# ip address 192.168.1.1 255.255.255.0
-Router(config-if)# no shut
+Router(config-if)# no sh
 ```
