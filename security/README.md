@@ -9,4 +9,5 @@
   - [nat/nat-static-mask.md](/security/nat/nat-static-mask.md)
 - [ospf](/security/ospf)
   - [ospf/dynamic-nat.md](/security/ospf/dynamic-nat.md)
+  - [ospf/enrutamiento_ospf.md](/security/ospf/enrutamiento_ospf.md)
 <!-- AUTO-GENERATED-INDEX:END -->
