@@ -202,7 +202,7 @@ Router(config)#ip nat inside source static 10.0.0.2 20.0.0.3
 Router(config)#ip nat inside source static 10.0.0.3 20.0.0.4
 ```
 
-### NAT Overload
+### NAT PAT Overload
 ```
 in gi0/0
 ip nat inside
@@ -212,6 +212,7 @@ ip nat outside
 exit
 access-list 1 permit 10.0.0.0 0.255.255.255
 ip nat inside source list 1 interface gi0/1 overload
+```
 
 ## Telnet
 Abrir conexiones de 0 a 15 por vty
