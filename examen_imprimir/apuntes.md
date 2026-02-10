@@ -141,18 +141,8 @@ Switch(config)#interface fa0/X
 Switch(config-in)#switchport mode access
 Switch(config-in)#switchport access vlan 10
 ```
-Partir la interfaz del router en subinterfaces y poner en un router múltiples default gateways.
-En este caso el "10", ".10" es la VLAN
-(Repetir por cada VLAN necesaria a agregar)
-```
-Router(config)#interface fa0/0.10
-Router(config-in)#encapsulation dot1q 10
-Switch(config-in)#ip address 10.0.0.1 255.0.0.0
-Router(config-in)#no shutdown
-Router(config)#interface fa0/0.20
-```
-## Encapsulación
 
+## Encapsulación
 Seleccionar el puerto de conexion de  Router a Vlan
 
 `0.10` Sería para la Vlan 10, se repite el siguiente proceso para todas las Vlans a conectar
@@ -214,14 +204,41 @@ access-list 1 permit 10.0.0.0 0.255.255.255
 ip nat inside source list 1 interface gi0/1 overload
 ```
 
+## Enrutamiento por BGP
+Router(config)# Router BGP Nºidentificativo del router entre 1-65535. Cada router un número diferente
+
+Ejemplo: `Router(config)# Router BGP 1`
+
+Se le conectan las redes que toca (que conoce), posteriormente se le indica quien es su router vecino, indicando el salto por donde pasará para conectarse hacia fuera.
+Es necesario indicar redes de VLAN y otros routers con quien tenga conexión (routers en neighbor no, unicamente routers).
+```
+Router(config)# Router BGP 100
+Router(config-router)# network 10.0.0.0 mask 255.0.0.0
+Router(config-router)# network 20.0.0.0 mask 255.0.0.0
+Router(config-router)# neighbor 20.0.0.2 remote-as 200
+```
+
+## Direccionamiento por MAC
+Memorización de equipos meidante MAC:
+```
+# Ejemplo
+Switch(config)#mac address-table static <MAC> vlan 1 interface <interfaz>
+# Práctico
+Switch(config)#mac address-table static 000C.CFD7.1450 vlan 1 interface fa0/2
+```
+Mostrar MACs memorizadas en el switch:
+```
+Switch(config)#do show mac address-table
+```
+
 ## Telnet
 Abrir conexiones de 0 a 15 por vty
 ```
-Switch (config)# line vty 0 15
-Switch (config-line)# password contraseña
-Switch (config-line)# login
-Switch (config-line)# exit
-Switch (config)# service password-encryption 
+Switch(config)# line vty 0 15
+Switch(config-line)# password contraseña
+Switch(config-line)# login
+Switch(config-line)# exit
+Switch(config)# service password-encryption 
 ```
 Mensaje de bienvenida diario
 ```
