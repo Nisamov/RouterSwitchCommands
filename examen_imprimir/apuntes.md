@@ -218,6 +218,52 @@ Router(config-router)# network 20.0.0.0 mask 255.0.0.0
 Router(config-router)# neighbor 20.0.0.2 remote-as 200
 ```
 
+## Etherchannel
+Alta disponibilidad de enlaces.
+Uno es active(activo) y otro pasive(pasivo)
+
+Configuración manual
+```
+Switch1# configure terminal 
+Switch1(config)# interface range gi0/1 - 4  
+Switch1(config-if-range)# channel-group 1 mode on 
+Switch1(config-if-range)# exit 
+```
+Configuracion automática
+```
+Switch# configure terminal
+Switch1(config)# interface range gi0/1 - 4  
+Switch1(config-if-range)# channel-group 1 mode on 
+Switch1(config-if-range)# exit
+Switch1(config)# interface port-channel 1 
+Switch1(config-if)# switchport mode trunk
+#Esto no es requerido salvo que se trabaje con vlans
+Switch1(config-if)# switchport trunk allowed vlan 1-2
+Switch1(config-if)# exit
+```
+Información etherchannel
+```
+Switch1(config)#show etherchannel port-channel
+```
+
+### PAGP
+Se configura lo mismo en ambos switches cambiando unicamente el tipo de cada uno.
+`auto`(activo) encargado de iniciar la conexión, `desirable`(pasivo) a la espera de conexión
+```
+Switch1(config)# interface range fa0/3-5
+Switch1(config-if-range)# channel-protocol pagp
+Switch1(config-if-range)# channel-group 1 mode desirable
+```
+
+### LACP
+Se configura lo mismo en ambos switches cambiando unicamente el tipo de cada uno.
+`active`(activo) encargado de iniciar la conexión, `passive`(pasivo) a la espera de conexión
+```
+interface range fa0/3-5
+channel-protocol lacp
+channel-group 1 mode active
+```
+
 ## Direccionamiento por MAC
 Memorización de equipos meidante MAC:
 ```

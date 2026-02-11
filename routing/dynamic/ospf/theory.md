@@ -55,7 +55,6 @@ Switch# configure terminal
 Switch(config)# interface range FastEthernet0/1 - 3
 Switch(config-if-range)# switchport mode trunk
 Switch(config-if-range)# exit
-Switch(config)#
 ```
 
 ## Paso 5: Mostrar Vlans en el servidor
