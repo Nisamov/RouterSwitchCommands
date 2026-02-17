@@ -4,18 +4,19 @@
 ## Configuración básica OSPF Multiárea
 
 Se usará en multiarea:
-- Area 0 para equipos
-- Area 1 de router a router
+- Area 0 = backbone = enlaces entre routers
+- Las LAN pueden ir en otras áreas (1,2…)
 
 ### Paso 1: Habilitar OSPF
 ```
 Router(config)# router ospf 1
 ```
-`1` es el ID del proceso OSPF (local al router, no tiene que coincidir con otros).
+`1` es el ID del proceso OSPF (local al router).
+Asociar area 0 al area de conexion entre routers, y a redes rde equipos se elige area 1
 
 ### Paso 2: Asignar redes a áreas (Multiárea)
 ```
-Router(config-router)#network 10.0.0.0 0.255.255.255 area 0
+Router(config-router)#network 10.0.0.0 0.0.0.3 area 0
 Router(config-router)#network 20.0.0.0 0.255.255.255 area 1
 Router(config-router)#network 30.0.0.0 0.255.255.255 area 2
 ```
@@ -32,7 +33,7 @@ Router#show ip protocols
 
 ## Habilitar MD5 Tras OSPF
 
-```
+```pgsql
 Router(config)#router ospf 1
 Router(config)#area 0 authentication message-digest
 ```
@@ -53,6 +54,13 @@ access-list [ID] [permit|deny] [IP origen] [máscara wildcard]
 access-list [ID] [permit|deny] [protocolo] [IP origen] [máscara wildcard] [IP destino] [máscara wildcard] [puerto opcional]
 ```
 **Wildcard:** Es la máscara inversa (ej. 0.0.0.63 equivale a rango de 64 IPs).
+
+### Denegar Equipos
+Si no se añade permit any, se bloquea todo (porque hay deny implícito).
+```
+Router(config)#access-list 1 deny host 192.168.1.10
+Router(config)#access-list 1 permit any
+```
 
 ### Denegar Redes
 Para bloquear una red en un router de destino:
@@ -146,16 +154,13 @@ Switch(config-in)#switchport access vlan 10
 Seleccionar el puerto de conexion de  Router a Vlan
 
 `0.10` Sería para la Vlan 10, se repite el siguiente proceso para todas las Vlans a conectar
+El dot1Q VLAN (10,20,30...), la IP a agregar es el Gateway, resto de vlans a agregar, conexion con la interfaz principal
 ```
 Router(config)#in gi0/0.10
-# El dot1Q VLAN (10,20,30...)
 Router(config-subif)#encapsulation dot1Q 10
-# La IP a agregar es el Gateway
 Router(config-subif)#ip address 192.168.100.1 255.255.255.0
 Router(config-subif)#no sh
 Router(config-subif)exit
-# Resto de vlans a agregar
-# Conexion con la interfaz principal
 Router(config)#in gi0/0
 Router(config-in)#no sh
 ```
@@ -164,7 +169,7 @@ Router(config-in)#no sh
 Configuración red externa y red interna
 
 ### NAT Dinámica
-- Se crea una ACL numero 1, que da acceso a la 10.0.0.0
+- Se crea una ACL numero 1, que da acceso a la 10.0.0.0, esta debe dar permiso a la red interna
 - Convierte las IP 20.0.0.3 en 20.0.0.4 es un rango de IPs
 ```
 Router(config)#interface gi0/0
@@ -173,7 +178,7 @@ Router(config-if)#exit
 Router(config)#interface gi0/1
 Router(config-if)#ip nat outside
 Router(config-if)#exit
-Router(config)#access-list 1 permit 10.0.0.0 0.0.0.255 (MASCARA WILDCARD [INVERSA])
+Router(config)#access-list 1 permit 192.168.1.0 0.0.0.255 (MASCARA WILDCARD [INVERSA])
 Router(config)#ip nat pool NAT_POOL 20.0.0.3 20.0.0.4 netmask 255.255.255.0 (MASCARA NORMAL)
 Router(config)#ip nat inside source list 1 pool NAT_POOL
 Router(config)#end
@@ -193,6 +198,8 @@ Router(config)#ip nat inside source static 10.0.0.3 20.0.0.4
 ```
 
 ### NAT PAT Overload
+El NAT PAT Overload siempre va en la interfaz externa.
+Siendo `g0/1`en este caso interfaz externa.
 ```
 in gi0/0
 ip nat inside
@@ -200,8 +207,27 @@ exit
 in gi0/1
 ip nat outside
 exit
-access-list 1 permit 10.0.0.0 0.255.255.255
+access-list 1 permit 192.168.1.0 0.0.0.255
 ip nat inside source list 1 interface gi0/1 overload
+```
+
+### Comprobaciones NAT
+```
+show ip nat translations
+show ip nat statistics
+```
+
+## RIP
+RIP (Routing Information Protocol) es un protocolo de enrutamiento dinámico de tipo vector-distancia.
+Su función es que los routers intercambien automáticamente las redes que conocen.
+`no auto-summary`>Evita que agrupe redes automáticamente.
+`network X.X.X.X`>Activa RIP en las interfaces que pertenezen a esa red (No requiere de máscara)
+```
+Router(config)# router rip
+Router(config-router)# version 2
+Router(config-router)# no auto-summary
+Router(config-router)# network 192.168.1.0
+Router(config-router)# network 10.0.0.0
 ```
 
 ## Enrutamiento por BGP
@@ -277,7 +303,39 @@ Mostrar MACs memorizadas en el switch:
 Switch(config)#do show mac address-table
 ```
 
+## Port Security
+Configuración de seguridad en puertos
+
+Es necesario activar `switchport port-securit`.
+```
+Switch(config)# interface fa0/1
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport port-security
+Switch(config-if)# switchport port-security maximum 1
+Switch(config-if)# switchport port-security mac-address sticky
+Switch(config-if)# switchport port-security violation shutdown
+```
+
+## DHCP
+Configuración de protocolo DHCP
+```
+ip dhcp excluded-address 192.168.1.1 192.168.1.10
+ip dhcp pool LAN
+ network 192.168.1.0 255.255.255.0
+ default-router 192.168.1.1
+ dns-server 8.8.8.8
+```
+
 ## Telnet
+
+Asignación de IP, el `ip default-gateway` no va dentro de la interfaz.
+```
+interface vlan 1
+ ip address 192.168.1.2 255.255.255.0
+ no shutdown
+exit
+ip default-gateway 192.168.1.1
+```
 Abrir conexiones de 0 a 15 por vty
 ```
 Switch(config)# line vty 0 15
@@ -293,4 +351,13 @@ Switch(config)# banner motd &mensaje&
 Guardar configuracion permanentemente
 ```
 Switch# copy running-config startup-config 
+```
+
+## Comprobaciones Generales
+```
+show ip route
+show ip protocols
+show ip ospf neighbor
+show ip route rip
+show running-config
 ```
